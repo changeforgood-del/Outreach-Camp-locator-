@@ -1,28 +1,98 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fresno Outreach Interactive Map — Jan–Jun 2026</title>
-<style>html,body{margin:0;height:100%;font-family:Arial,sans-serif}#loading{display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center}</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Private Fresno outreach field navigator for Meta Ray-Ban Display glasses.">
+  <meta name="mrbd-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>Fresno Outreach Navigator</title>
 </head>
 <body>
-<div id="loading">Loading Fresno Outreach Interactive Map — Jan–Jun 2026…</div>
-<script>
-(async()=>{
-  try {
-    const files=['chunks/part1.txt','chunks/part2.txt','chunks/part3.txt','chunks/part4.txt'];
-    const parts=await Promise.all(files.map(async f=>{const r=await fetch(f);if(!r.ok)throw new Error('Missing map data: '+f);return r.text();}));
-    const b64=parts.join('').replace(/\s/g,'');
-    const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
-    if(!('DecompressionStream' in window)) throw new Error('This browser does not support DecompressionStream.');
-    const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-    const html=await new Response(stream).text();
-    document.open();document.write(html);document.close();
-  } catch(e) {
-    document.getElementById('loading').innerHTML='<div><h2>Map could not load</h2><p>'+e.message+'</p><p>Try Chrome, Edge, Firefox, or Safari.</p></div>';
-  }
-})();
-</script>
+  <main id="app" aria-live="polite">
+    <section id="unlockScreen" class="screen active" aria-label="Unlock private outreach locations">
+      <div class="panel unlock-panel">
+        <p class="eyebrow">PRIVATE FIELD TOOL</p>
+        <h1>Fresno Outreach</h1>
+        <p class="sub">80 encrypted locations • Jan–Jun 2026 reference</p>
+        <label for="pinInput">Unlock PIN</label>
+        <input id="pinInput" class="focusable pin" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="8" aria-describedby="unlockHelp">
+        <p id="unlockHelp" class="micro">Pinch/select the field to use the glasses composer.</p>
+        <button id="unlockButton" class="focusable primary" type="button">UNLOCK LOCATIONS</button>
+        <p id="unlockStatus" class="status" role="status"></p>
+      </div>
+    </section>
+
+    <section id="mainScreen" class="screen" aria-label="Location browser">
+      <header class="hud-header">
+        <div>
+          <span id="positionLabel" class="counter">1 / 80</span>
+          <span id="filterLabel" class="filter-label">ALL</span>
+        </div>
+        <div id="gpsStatus" class="gps-status">NO GPS NEEDED</div>
+      </header>
+
+      <article id="locationCard" class="location-card" tabindex="0">
+        <div class="card-topline">
+          <span id="packetId" class="packet">#1</span>
+          <span id="typeBadge" class="badge">ENCAMPMENT</span>
+          <span id="priorityBadge" class="badge priority">ROUTINE</span>
+        </div>
+        <h2 id="locationTitle">Loading…</h2>
+        <p id="locationAddress" class="address"></p>
+        <div class="metrics">
+          <div><span class="metric-label">DEST</span><strong id="distanceValue">ZIP —</strong></div>
+          <div><span class="metric-label">COUNT</span><strong id="countValue">—</strong></div>
+          <div><span class="metric-label">ZONE</span><strong id="zoneValue">—</strong></div>
+        </div>
+        <p id="notePreview" class="note-preview"></p>
+      </article>
+
+      <div class="actions" aria-label="Location actions">
+        <button id="prevButton" class="focusable secondary" type="button">← PREV</button>
+        <button id="navigateButton" class="focusable primary" type="button">NAVIGATE</button>
+        <button id="nextButton" class="focusable secondary" type="button">NEXT →</button>
+      </div>
+      <button id="detailsButton" class="focusable secondary" type="button" style="min-height:54px;margin-top:6px">DETAILS</button>
+      <p class="hint">Swipe/← → locations • ↑ NAV • ↓ details • ESC filters</p>
+    </section>
+
+    <section id="detailScreen" class="screen" aria-label="Location details">
+      <header class="hud-header">
+        <div><span id="detailPacket" class="counter">#1</span> <span id="detailPageLabel" class="filter-label">NOTE 1/3</span></div>
+        <div id="detailDistance" class="gps-status">—</div>
+      </header>
+      <div class="panel detail-panel">
+        <h2 id="detailTitle"></h2>
+        <h3 id="detailHeading">Field note</h3>
+        <p id="detailBody" class="detail-body"></p>
+        <div id="detailMeta" class="detail-meta"></div>
+        <div id="mapActions" class="map-actions hidden">
+          <a id="aerialLink" class="focusable secondary action-link" href="#">AERIAL</a>
+          <a id="directionsLink" class="focusable primary action-link" href="#" target="_blank" rel="noopener">NAVIGATE</a>
+        </div>
+      </div>
+      <div class="actions two">
+        <button id="backButton" class="focusable secondary" type="button">BACK</button>
+        <button id="detailNextButton" class="focusable primary" type="button">NEXT LOCATION →</button>
+      </div>
+      <p class="hint">← → locations • ↑ ↓ detail pages • ENTER back</p>
+    </section>
+
+    <section id="filterScreen" class="screen" aria-label="Filter locations">
+      <div class="panel filter-panel">
+        <p class="eyebrow">FILTER LOCATIONS</p>
+        <h2 id="filterChoice">All 80 locations</h2>
+        <p id="filterDescription" class="sub">Original packet order</p>
+        <div class="filter-arrows" aria-hidden="true">↑<br><span>change</span><br>↓</div>
+        <button id="applyFilterButton" class="focusable primary" type="button">APPLY FILTER</button>
+        <button id="cancelFilterButton" class="focusable secondary" type="button">CANCEL</button>
+      </div>
+      <p class="hint">↑ ↓ choose • ENTER apply • ESC cancel</p>
+    </section>
+  </main>
+  <script src="app.js"></script>
 </body>
 </html>
