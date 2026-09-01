@@ -1,0 +1,12 @@
+{
+  "name": "Outreach Camp Nearby",
+  "short_name": "Camp Nearby",
+  "description": "Private field map for coordinated homeless outreach.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fbfa",
+  "theme_color": "#0c3f38",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
