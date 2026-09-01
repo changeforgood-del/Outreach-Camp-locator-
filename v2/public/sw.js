@@ -12,7 +12,12 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-  if (request.method !== "GET" || new URL(request.url).pathname.startsWith("/api/")) return;
+  const cacheableDestinations = new Set(["style", "script", "image", "font"]);
+  if (
+    request.method !== "GET" ||
+    new URL(request.url).pathname.startsWith("/api/") ||
+    !cacheableDestinations.has(request.destination)
+  ) return;
   event.respondWith(
     fetch(request)
       .then((response) => {
